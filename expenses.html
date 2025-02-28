@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses - BudgetMaster{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6">
+    <!-- Add Expense Form -->
+    <div class="w-full md:w-1/3">
+        <div class="bg-white rounded-lg shadow p-5 sticky top-6">
+            <h2 class="text-gray-700 text-lg font-semibold mb-4">Add New Expense</h2>
+            <form action="{{ url_for('add_expense') }}" method="POST">
+                <div class="mb-3">
+                    <label for="amount" class="block text-gray-600 text-sm mb-1">Amount</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">{{ currency }}</span>
+                        <input type="number" id="amount" name="amount" class="pl-8 w-full border rounded-md py-2 px-3" 
+                               placeholder="0.00" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="category" class="block text-gray-600 text-sm mb-1">Category</label>
+                    <select id="category" name="category" class="w-full border rounded-md py-2 px-3 bg-white" required>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="date" class="block text-gray-600 text-sm mb-1">Date</label>
+                    <input type="date" id="date" name="date" class="w-full border rounded-md py-2 px-3" 
+                           value="{{ now().strftime('%Y-%m-%d') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="note" class="block text-gray-600 text-sm mb-1">Note (Optional)</label>
+                    <input type="text" id="note" name="note" class="w-full border rounded-md py-2 px-3" 
+                           placeholder="Add a note">
+                </div>
+                <input type="hidden" name="source" value="expenses">
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+                    <i class="fas fa-plus mr-1"></i> Add Expense
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense List -->
+    <div class="w-full md:w-2/3">
+        <div class="bg-white rounded-lg shadow p-5">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-gray-700 text-lg font-semibold">All Expenses</h2>
+                
+                <div class="flex space-x-2">
+                    <!-- Filter Dropdown -->
+                    <div class="relative">
+                        <select id="categoryFilter" class="border rounded-md py-2 px-3 bg-white text-sm cursor-pointer">
+                            <option value="all">All Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Month Filter -->
+                    <div class="relative">
+                        <input type="month" id="monthFilter" class="border rounded-md py-2 px-3 text-sm" 
+                               value="{{ now().strftime('%Y-%m') }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white" id="expenseTable">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">Date</th>
+                            <th class="py-3 px-6 text-left">Category</th>
+                            <th class="py-3 px-6 text-left">Note</th>
+                            <th class="py-3 px-6 text-right">Amount</th>
+                            <th class="py-3 px-6 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm">
+                        {% if expenses %}
+                            {% for expense in expenses %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-50" data-category="{{ expense.category }}">
+                                <td class="py-3 px-6 text-left" data-date="{{ expense.date }}">{{ expense.date }}</td>
+                                <td class="py-3 px-6 text-left">{{ expense.category }}</td>
+                                <td class="py-3 px-6 text-left">{{ expense.note or "-" }}</td>
+                                <td class="py-3 px-6 text-right font-medium">{{ currency }}{{ expense.amount|round(2) }}</td>
+                                <td class="py-3 px-6 text-center">
+                                    <form action="{{ url_for('delete_expense', expense_id=expense.id) }}" method="POST" 
+                                          onsubmit="
