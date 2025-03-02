@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
+
 {% block title %}Setup Profile - BudgetMaster{% endblock %}
+
 
 {% block content %}
 <div class="max-w-md mx-auto">
@@ -9,7 +11,7 @@
             <h1 class="text-2xl font-bold text-gray-800">Complete Your Profile</h1>
             <p class="text-gray-600 mt-2">Set up your financial information</p>
         </div>
-        
+       
         <form method="POST" action="{{ url_for('setup_profile') }}">
             <div class="mb-4">
                 <label for="salary" class="block text-gray-700 text-sm font-medium mb-2">Monthly Income</label>
@@ -21,31 +23,32 @@
                         <option value="£">£</option>
                         <option value="¥">¥</option>
                     </select>
-                    <input type="number" id="salary" name="salary" 
+                    <input type="number" id="salary" name="salary"
                            class="w-full border border-gray-300 rounded-md py-2 pl-14 pr-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                            placeholder="0.00" step="0.01" min="0" required>
                 </div>
                 <p class="text-sm text-gray-500 mt-1">Enter your monthly income after taxes</p>
             </div>
-            
+           
             <div class="mb-6">
                 <label for="savings_target" class="block text-gray-700 text-sm font-medium mb-2">Monthly Savings Goal</label>
                 <div class="relative">
                     <span id="currency-symbol" class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₹</span>
-                    <input type="number" id="savings_target" name="savings_target" 
+                    <input type="number" id="savings_target" name="savings_target"
                            class="w-full border border-gray-300 rounded-md py-2 pl-8 pr-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                            placeholder="0.00" step="0.01" min="0" required>
                 </div>
                 <p class="text-sm text-gray-500 mt-1">How much you want to save each month</p>
             </div>
-            
-            <button type="submit" 
+           
+            <button type="submit"
                     class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Save Profile
             </button>
         </form>
     </div>
 </div>
+
 
 <script>
     // Update currency symbol when currency dropdown changes
@@ -54,3 +57,4 @@
     });
 </script>
 {% endblock %}
+
