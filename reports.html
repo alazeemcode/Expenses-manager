@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - BudgetMaster{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-3 py-4 animate-fade-in">
+    <div class="bg-white rounded-lg shadow-md p-3">
+        <h1 class="text-2xl font-bold text-gray-800 mb-3">Yearly Expense Report</h1>
+        
+        <!-- Date Range Filter -->
+        <form method="GET" action="{{ url_for('reports') }}" class="mb-3 space-y-2">
+            <input type="date" name="start_date" class="w-full border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 transition-shadow duration-200" 
+                   value="{{ start_date }}" required>
+            <input type="date" name="end_date" class="w-full border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 transition-shadow duration-200" 
+                   value="{{ end_date }}" required>
+            <button type="submit" class="w-full bg-gray-800 text-white py-1 px-2 rounded-md hover:bg-gray-700 transition-colors duration-200">
+                <i class="fas fa-filter mr-1"></i> Apply Filter
+            </button>
+        </form>
+
+        <!-- Yearly Summary -->
+        <div class="grid gap-3 mb-3">
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-700 text-sm">Total Income</p>
+                <p class="text-lg font-medium text-gray-900">{{ currency }}{{ monthly_incomes|sum(attribute='amount')|round(2) }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-700 text-sm">Total Expenses</p>
+                <p class="text-lg font-medium text-gray-900">{{ currency }}{{ monthly_expenses|sum(attribute='amount')|round(2) }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-700 text-sm">Net Savings</p>
+                <p class="text-lg font-medium text-gray-900">{{ currency }}{{ (monthly_incomes|sum(attribute='amount') - monthly_expenses|sum(attribute='amount'))|round(2) }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-700 text-sm">Top Category</p>
+                {% if categories and amounts %}
+                    {% set max_amount = amounts|max %}
+                    {% set top_category = categories[amounts.index(max_amount)] %}
+                    <p class="text-lg font-medium text-gray-900">{{ top_category }} ({{ currency }}{{ max_amount|round(2) }})</p>
+                {% else %}
+                    <p class="text-lg font-medium text-gray-900">No data</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid md:grid-cols-2 gap-3 mb-3">
+            <!-- Pie Chart for Category Breakdown -->
+            <div>
+                <h2 class="text-gray-700 text-lg font-semibold mb-2">Category Spending</h2>
+                <div class="h-48">
+                    <canvas id="categoryChart" class="animate-fade-in"></canvas>
+                </div>
+            </div>
+
+            <!-- Bar Chart for Monthly Trends -->
+            <div>
+                <h2 class="text-gray-700 text-lg font-semibold mb-2">Monthly Trends</h2>
+                <div class="h-48">
+                    <canvas id="monthlyChart" class="animate-fade-in"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Expense Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-200">
+                <thead class="bg-gray-100">
+                    <tr class="text-gray-600 uppercase text-xs leading-tight">
+                        <th class="py-2 px-3 text-left">Month</th>
+                        <th class="py-2 px-3 text-right">Income (₹)</th>
+                        <th class="py-2 px-3 text-right">Expenses (₹)</th>
+                        <th class="py-2 px-3 text-right">Net (₹)</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm">
+                    {% for i in range(monthly_expenses|length) %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200">
+                        <td class="py-2 px-3 text-left">{{ monthly_expenses[i].month }}</td>
+                        <td class="py-2 px-3 text-right font-medium">{{ currency }}{{ monthly_incomes[i].amount|round(2) }}</td>
+                        <td class="py-2 px-3 text-right font-medium">{{ currency }}{{ monthly_expenses[i].amount|round(2) }}</td>
+                        <td class="py-2 px-3 text-right font-medium">{{ currency }}{{ (monthly_incomes[i].amount - monthly_expenses[i].amount)|round(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Convert Python lists to JavaScript arrays for Chart.js
+    const categories = {{ categories|tojson }};
+    const amounts = {{ amounts|tojson }};
+    const monthlyExpenses = {{ monthly_expenses|tojson }};
+    const monthlyIncomes = {{ monthly_incomes|tojson }};
+    const monthlyLabels = monthlyExpenses.map(item => item.month);
+    const expenseAmounts = monthlyExpenses.map(item => item.amount);
+    const incomeAmounts = monthlyIncomes.map(item => item.amount);
+    const chartColors = {{ chart_colors|tojson }};
+
+    // Category Pie Chart
+    const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctxCategory, {
+        type: 'pie',
+        data: {
+            labels: categories,
+            datasets: [{
+                data: amounts,
+                backgroundColor: chartColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: '#4A5568',
+                        font: { size: 10 },
+                        boxWidth: 10
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#FFFFFF',
+                    titleColor: '#4A5568',
+                    bodyColor: '#4A5568',
+                    borderColor: '#E5E7EB',
+                    borderWidth: 1
+                }
+            },
+            animation: { duration: 1000, easing: 'easeInOutQuad' }
+        }
+    });
+
+    // Monthly Bar Chart
+    const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctxMonthly, {
+        type: 'bar',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Income',
+                data: incomeAmounts,
+                backgroundColor: '#4299E1',
+                borderColor: '#4299E1',
+                borderWidth: 1
+            }, {
+                label: 'Expenses',
+                data: expenseAmounts,
+                backgroundColor: '#4A5568',
+                borderColor: '#4A5568',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#4A5568', callback: value => `${currency}${value.toFixed(0)}` },
+                    grid: { color: '#E5E7EB' }
+                },
+                x: {
+                    ticks: { color: '#4A5568' },
+                    grid: { color: '#E5E7EB' }
+                }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { color: '#4A5568', font: { size: 10 } } },
+                tooltip: {
+                    backgroundColor: '#FFFFFF',
+                    titleColor: '#4A5568',
+                    bodyColor: '#4A5568',
+                    borderColor: '#E5E7EB',
+                    borderWidth: 1
+                }
+            },
+            animation: { duration: 1000, easing: 'easeInOutQuad' }
+        }
+    });
+</script>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% endblock %}
