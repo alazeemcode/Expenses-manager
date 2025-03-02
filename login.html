@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
+
 {% block title %}Login - BudgetMaster{% endblock %}
+
 
 {% block content %}
 <div class="max-w-md mx-auto">
@@ -9,27 +11,27 @@
             <h1 class="text-2xl font-bold text-gray-800">Login to BudgetMaster</h1>
             <p class="text-gray-600 mt-2">Track your expenses and save more</p>
         </div>
-        
+       
         <form method="POST" action="{{ url_for('login') }}">
             <div class="mb-4">
                 <label for="username" class="block text-gray-700 text-sm font-medium mb-2">Username</label>
-                <input type="text" id="username" name="username" 
+                <input type="text" id="username" name="username"
                        class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                        required>
             </div>
-            
+           
             <div class="mb-6">
                 <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
-                <input type="password" id="password" name="password" 
+                <input type="password" id="password" name="password"
                        class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                        required>
             </div>
-            
-            <button type="submit" 
+           
+            <button type="submit"
                     class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Login
             </button>
-            
+           
             <div class="mt-4 text-center text-sm">
                 <span class="text-gray-600">Don't have an account?</span>
                 <a href="{{ url_for('register') }}" class="text-indigo-600 hover:text-indigo-800 ml-1">Register here</a>
