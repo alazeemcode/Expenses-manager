@@ -50,6 +50,13 @@ CREATE TABLE IF NOT EXISTS incomes (
   FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
+-- Indexes for performance
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
+CREATE INDEX idx_categories_user_name ON categories(user_id, name);
+CREATE INDEX idx_expenses_user_date ON expenses(user_id, date);
+CREATE INDEX idx_incomes_user_date ON incomes(user_id, date);
+
 -- Insert default categories
 INSERT OR IGNORE INTO categories (name) VALUES ('Food');
 INSERT OR IGNORE INTO categories (name) VALUES ('Transportation');
