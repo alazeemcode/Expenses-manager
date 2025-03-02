@@ -38,6 +38,18 @@ CREATE TABLE IF NOT EXISTS expenses (
   FOREIGN KEY (category_id) REFERENCES categories (id)
 );
 
+-- Incomes table
+CREATE TABLE IF NOT EXISTS incomes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  amount REAL NOT NULL,
+  date TEXT NOT NULL,
+  source TEXT,
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
 -- Insert default categories
 INSERT OR IGNORE INTO categories (name) VALUES ('Food');
 INSERT OR IGNORE INTO categories (name) VALUES ('Transportation');
